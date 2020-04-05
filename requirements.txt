@@ -1,2 +1,6 @@
 transformers
-tensorflow>2
+tensorflow-cpu
+numpy
+seaborn
+matplotlib
+sklearn
