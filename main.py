@@ -13,7 +13,7 @@ sns.set(style="white", context="talk")
 TM = TransformerModel(
     "DistilBert",
     "ForQuestionAnswering",
-    "distilbert-base-uncased"
+    "distilbert-base-uncased-distilled-squad"
 )
 QP = QuestionsPreparation(TM.tokenizer)
 
@@ -22,16 +22,21 @@ def clear(): return os.system('cls')  # on Linux System
 
 
 clear()
-context = "JRR Tolkien is one of the most know fantasy writer, he wrote the famous serie The Lord Of The Rings"
-question = "Who wrote the lord of the rings ?"
+question = "What is Tolkien ?"
+context = "JRR Tolkien is one of the most famous fantasy writer in the world. He wrote the Lord of the Rings, a story about a humans, dwarves, elves, hobbits (small creatures) and orcs."
 
+print(context)
 input_ids, segment_ids, tokens = QP.prepare(
     context,
     question
 )
 
-outputs = TM.model({'input_ids': input_ids, 'token_type_ids': segment_ids})
-start_scores, end_scores = outputs[:2]
+
+outputs = TM.model({'input_ids': input_ids})
+outputs2 = TM.model({'input_ids': input_ids})
+start_scores, end_scores = outputs
+
+
 
 token_labels = []
 for (i, token) in enumerate(tokens):
@@ -39,7 +44,8 @@ for (i, token) in enumerate(tokens):
 
 start_scores = np.array(start_scores).flatten()
 end_scores = np.array(end_scores).flatten()
-
+print(question)
+print(QP.resultDisplay(start_scores, end_scores, tokens))
 
 # Set up the matplotlib figure
 f, (ax1, ax2) = plt.subplots(2, 1, figsize=(7, 5), sharex=True)
@@ -57,3 +63,4 @@ ax2.set_title('End score')
 
 
 plt.show()
+

@@ -36,8 +36,6 @@ class TransformerModel:
         self.pretrained_weights = pretrained_weights
         self.getTokenizer()
         self.getModel()
-        # self.tokenizer = BertTokenizer.from_pretrained('bert-base-cased')
-        # self.model = TFBertForSequenceClassification.from_pretrained('bert-base-cased')
 
     def checkIfModel(self):
         return self.modelName in self.available_pretrained_weights.keys()
