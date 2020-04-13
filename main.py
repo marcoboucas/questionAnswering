@@ -1,66 +1,43 @@
-from loadTransformer import TransformerModel
-from questions import QuestionsPreparation
-import tensorflow as tf
+"""Main file of the project
+
+"""
 import os
-import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
-import pandas as pd
 
-sns.set(style="white", context="talk")
+from transformers_api.load_transformers import TransformerModel
+from situations.questions import QuestionsPreparation
+from questions.compare import Comparator
 
+def clear():
+    """Function that clear the console
+    """
+    return os.system('clear')  # on Linux System
 
-TM = TransformerModel(
-    "DistilBert",
-    "ForQuestionAnswering",
-    "distilbert-base-uncased-distilled-squad"
-)
-QP = QuestionsPreparation(TM.tokenizer)
+def main():
+    """Main function of the file
+    """
+    transformer_model = TransformerModel(
+        "DistilBert",
+        "ForQuestionAnswering",
+        "distilbert-base-uncased-distilled-squad"
+    )
+    question_preparation = QuestionsPreparation(transformer_model)
 
+    comparator = Comparator(transformer_model, 'context.md')
 
-def clear(): return os.system('cls')  # on Linux System
+    context = comparator.get_context()
+    print(context)
+    #clear()
+    print('\n'*3)
+    question = input('Your question ?\n')
 
+    context = comparator.find_best_paragraph(question, False)
+    data = {
+        "context" : context,
+        "question" : question
+    }
 
-clear()
-question = "What is Tolkien ?"
-context = "JRR Tolkien is one of the most famous fantasy writer in the world. He wrote the Lord of the Rings, a story about a humans, dwarves, elves, hobbits (small creatures) and orcs."
+    data = question_preparation.predict(data)
+    print(data['answer'])
 
-print(context)
-input_ids, segment_ids, tokens = QP.prepare(
-    context,
-    question
-)
-
-
-outputs = TM.model({'input_ids': input_ids})
-outputs2 = TM.model({'input_ids': input_ids})
-start_scores, end_scores = outputs
-
-
-
-token_labels = []
-for (i, token) in enumerate(tokens):
-    token_labels.append('{:} - {:>2}'.format(token, i))
-
-start_scores = np.array(start_scores).flatten()
-end_scores = np.array(end_scores).flatten()
-print(question)
-print(QP.resultDisplay(start_scores, end_scores, tokens))
-
-# Set up the matplotlib figure
-f, (ax1, ax2) = plt.subplots(2, 1, figsize=(7, 5), sharex=True)
-
-
-sns.barplot(x=token_labels, y=start_scores, ci=None, ax=ax1)
-ax1.set_xticklabels(ax1.get_xticklabels(), rotation=90, ha="center")
-ax1.grid(True)
-ax1.set_title('Start score')
-
-sns.barplot(x=token_labels, y=end_scores, ci=None, ax=ax2)
-ax2.set_xticklabels(ax2.get_xticklabels(), rotation=90, ha="center")
-ax2.grid(True)
-ax2.set_title('End score')
-
-
-plt.show()
-
+if __name__ == "__main__":
+    main()
